@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+// Prettier doesn't like the Windows line endings for this file
 export interface Starship {
   MGLT: number;
   cargoCapacity: number;
@@ -22,4 +24,9 @@ export interface Pilot {
 
 export interface Film {
   title: string;
+}
+
+export interface GeoCoords {
+  latitude: number;
+  longitude: number;
 }

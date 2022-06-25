@@ -24,8 +24,8 @@ import Geolocation from 'react-native-geolocation-service';
 import {getDistance} from 'geolib';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {STARSHIPS} from './templates';
-import {Starship} from './@types/types';
+import {STARSHIPS} from './@templates/templates';
+import {Starship, GeoCoords} from './@types/types';
 
 const Item = ({starship}: {starship: Starship}) => {
   return (
@@ -36,8 +36,9 @@ const Item = ({starship}: {starship: Starship}) => {
 };
 
 const App = () => {
-  const [hasLocationPermission, setHasLocationPermission] = useState(false);
-  const [currentPosition, setCurrentPosition] = useState<any>(undefined);
+  const [currentPosition, setCurrentPosition] = useState<GeoCoords | undefined>(
+    undefined,
+  );
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -55,7 +56,6 @@ const App = () => {
         case RESULTS.DENIED:
           request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(response => {
             if (response === RESULTS.GRANTED) {
-              setHasLocationPermission(true);
               getCoords();
             }
           });
@@ -64,7 +64,6 @@ const App = () => {
           console.log('The permission is limited: some actions are possible');
           break;
         case RESULTS.GRANTED:
-          setHasLocationPermission(true);
           getCoords();
           break;
         case RESULTS.BLOCKED:
@@ -89,10 +88,18 @@ const App = () => {
   };
 
   const getDistanceToSWL = () => {
-    return getDistance(
+    if (!currentPosition) {
+      return '???';
+    }
+    const distanceInMeters: number = getDistance(
+      {
+        latitude: currentPosition.latitude,
+        longitude: currentPosition.longitude,
+      }, // Current Location
       {latitude: 33.814831976267016, longitude: -117.92057887641796}, // Star Wars Land
-      {latitude: currentPosition.latitude, longitude: currentPosition.longitude} // Current Location
-    ) * 0.000621371 // convert to miles
+    );
+
+    return distanceInMeters * 0.000621371;
   };
 
   const renderItem = ({item}: {item: Starship}) => <Item starship={item} />;
@@ -107,7 +114,7 @@ const App = () => {
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      {hasLocationPermission && (
+      {!!currentPosition && (
         <>
           <Text>Latitude: {currentPosition.latitude}</Text>
           <Text>Longitude: {currentPosition.longitude}</Text>

@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+// Prettier doesn't like the Windows line endings here
 import {gql} from '@apollo/client';
 
 export const STARSHIPS = gql`
