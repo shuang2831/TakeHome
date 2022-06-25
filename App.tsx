@@ -8,7 +8,7 @@
  * @format
  */
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   FlatList,
   SafeAreaView,
@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import {useQuery} from '@apollo/client';
 import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import Geolocation from 'react-native-geolocation-service';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {STARSHIPS} from './templates';
@@ -34,37 +35,57 @@ const Item = ({starship}: {starship: Starship}) => {
 };
 
 const App = () => {
-  check(PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION).then(result => {
-    switch (result) {
-      case RESULTS.UNAVAILABLE:
-        console.log(
-          'This feature is not available (on this device / in this context)',
-        );
-        break;
-      case RESULTS.DENIED:
-        request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(response => {
-          console.log('response', response);
-        });
-        break;
-      case RESULTS.LIMITED:
-        console.log('The permission is limited: some actions are possible');
-        break;
-      case RESULTS.GRANTED:
-        console.log('The permission is granted');
-        break;
-      case RESULTS.BLOCKED:
-        console.log('The permission is denied and not requestable anymore');
-        break;
-    }
-  });
-
+  const [hasLocationPermission, setHasLocationPermission] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState<any>(undefined);
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  useEffect(() => {
+    check(PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION).then(result => {
+      switch (result) {
+        case RESULTS.UNAVAILABLE:
+          console.log(
+            'This feature is not available (on this device / in this context)',
+          );
+          break;
+        case RESULTS.DENIED:
+          request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(response => {
+            if (response === RESULTS.GRANTED) {
+              setHasLocationPermission(true);
+              getCoords();
+            }
+          });
+          break;
+        case RESULTS.LIMITED:
+          console.log('The permission is limited: some actions are possible');
+          break;
+        case RESULTS.GRANTED:
+          setHasLocationPermission(true);
+          getCoords();
+          break;
+        case RESULTS.BLOCKED:
+          console.log('The permission is denied and not requestable anymore');
+          break;
+      }
+    });
+  }, []);
   const {loading, error, data} = useQuery(STARSHIPS);
+
+  const getCoords = () => {
+    return Geolocation.getCurrentPosition(
+      position => {
+        setCurrentPosition(position.coords);
+      },
+      err => {
+        // See error code charts below.
+        console.log(err.code, err.message);
+      },
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+    );
+  };
 
   const renderItem = ({item}: {item: Starship}) => <Item starship={item} />;
 
@@ -78,6 +99,12 @@ const App = () => {
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      {hasLocationPermission && (
+        <>
+          <Text>Latitude: {currentPosition.latitude}</Text>
+          <Text>Longitude: {currentPosition.longitude}</Text>
+        </>
+      )}
       <View
         style={{
           backgroundColor: isDarkMode ? Colors.black : Colors.white,
