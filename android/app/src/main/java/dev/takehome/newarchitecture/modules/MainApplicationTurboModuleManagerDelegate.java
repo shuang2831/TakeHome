@@ -1,4 +1,4 @@
-package com.takehome.newarchitecture.modules;
+package dev.takehome.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;
