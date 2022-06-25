@@ -20,12 +20,11 @@ import {
 } from 'react-native';
 import {useQuery} from '@apollo/client';
 
-import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
-
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {STARSHIPS} from './templates';
 import {Starship} from './@types/types';
 
-const Item = ({starship}) => {
+const Item = ({starship}: {starship: Starship}) => {
   return (
     <View style={styles.sectionContainer}>
       <Text style={styles.sectionTitle}>{starship.name}</Text>
@@ -42,10 +41,7 @@ const App = () => {
 
   const {loading, error, data} = useQuery(STARSHIPS);
 
-  console.log(loading);
-  console.log(error);
-
-  const renderItem = ({item}) => <Item starship={item} />;
+  const renderItem = ({item}: {item: Starship}) => <Item starship={item} />;
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>Error...</Text>;
