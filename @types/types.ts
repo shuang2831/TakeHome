@@ -6,7 +6,7 @@ export interface Starship {
   consumables: string;
   costInCredits: number;
   crew: string;
-  filmConnection: [Film];
+  filmConnection: FilmConnection;
   hyperdriveRating: number;
   id: string;
   length: number;
@@ -15,11 +15,19 @@ export interface Starship {
   model: string;
   name: string;
   passengers: string;
-  pilotConnection: [Pilot];
+  pilotConnection: PilotConnection;
+}
+
+export interface PilotConnection {
+  pilots: [Pilot];
 }
 
 export interface Pilot {
   name: string;
+}
+
+export interface FilmConnection {
+  films: [Film];
 }
 
 export interface Film {
