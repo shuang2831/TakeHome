@@ -3,6 +3,7 @@ import {
   FlatList,
   ImageBackground,
   Modal,
+  Platform,
   Pressable,
   SafeAreaView,
   StatusBar,
@@ -12,7 +13,13 @@ import {
   View,
 } from 'react-native';
 import {useQuery} from '@apollo/client';
-import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import {
+  check,
+  request,
+  Permission,
+  PERMISSIONS,
+  RESULTS,
+} from 'react-native-permissions';
 import Geolocation from 'react-native-geolocation-service';
 import {getDistance} from 'geolib';
 import {AppBar, Surface, Button} from '@react-native-material/core';
@@ -70,7 +77,11 @@ const App = () => {
   };
 
   useEffect(() => {
-    check(PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION).then(result => {
+    const locationPermission: Permission =
+      Platform.OS === 'ios'
+        ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
+        : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
+    check(locationPermission).then(result => {
       switch (result) {
         case RESULTS.UNAVAILABLE:
           console.log(
@@ -78,7 +89,7 @@ const App = () => {
           );
           break;
         case RESULTS.DENIED:
-          request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(response => {
+          request(locationPermission).then(response => {
             if (response === RESULTS.GRANTED) {
               getCoords();
             }
