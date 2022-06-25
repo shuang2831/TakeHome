@@ -19,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import {useQuery} from '@apollo/client';
+import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {STARSHIPS} from './templates';
@@ -33,6 +34,30 @@ const Item = ({starship}: {starship: Starship}) => {
 };
 
 const App = () => {
+  check(PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION).then(result => {
+    switch (result) {
+      case RESULTS.UNAVAILABLE:
+        console.log(
+          'This feature is not available (on this device / in this context)',
+        );
+        break;
+      case RESULTS.DENIED:
+        request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION).then(response => {
+          console.log('response', response);
+        });
+        break;
+      case RESULTS.LIMITED:
+        console.log('The permission is limited: some actions are possible');
+        break;
+      case RESULTS.GRANTED:
+        console.log('The permission is granted');
+        break;
+      case RESULTS.BLOCKED:
+        console.log('The permission is denied and not requestable anymore');
+        break;
+    }
+  });
+
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -43,8 +68,12 @@ const App = () => {
 
   const renderItem = ({item}: {item: Starship}) => <Item starship={item} />;
 
-  if (loading) return <Text>Loading...</Text>;
-  if (error) return <Text>Error...</Text>;
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
+  if (error) {
+    return <Text>Error...</Text>;
+  }
 
   return (
     <SafeAreaView style={backgroundStyle}>
