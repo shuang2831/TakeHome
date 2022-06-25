@@ -21,6 +21,7 @@ import {
 import {useQuery} from '@apollo/client';
 import {check, request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import Geolocation from 'react-native-geolocation-service';
+import {getDistance} from 'geolib';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {STARSHIPS} from './templates';
@@ -87,6 +88,13 @@ const App = () => {
     );
   };
 
+  const getDistanceToSWL = () => {
+    return getDistance(
+      {latitude: 33.814831976267016, longitude: -117.92057887641796}, // Star Wars Land
+      {latitude: currentPosition.latitude, longitude: currentPosition.longitude} // Current Location
+    ) * 0.000621371 // convert to miles
+  };
+
   const renderItem = ({item}: {item: Starship}) => <Item starship={item} />;
 
   if (loading) {
@@ -103,6 +111,7 @@ const App = () => {
         <>
           <Text>Latitude: {currentPosition.latitude}</Text>
           <Text>Longitude: {currentPosition.longitude}</Text>
+          <Text>Distance to Star Wars Land: {getDistanceToSWL()} mi</Text>
         </>
       )}
       <View
